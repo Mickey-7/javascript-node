@@ -1,0 +1,280 @@
+reference : https://stackabuse.com/handling-events-in-node-js-with-evenemitter/
+
+-------------------------------------------------------------------------------------------
+
+Creating an EventEmitter Object
+    create eventEmitter.js
+        
+    // First, import the EventEmitter class from the events modules:
+    const { EventEmitter } = require("events");
+
+    // Then let's create an EventEmitter:
+    const timerEventEmitter = new EventEmitter();
+
+    // Let's make this event repeat every second.
+    // Using the setInterval() method,
+    // a timer is created which will
+    // publish the update event every second:
+    let currentTime = 0;
+    // snippet  : setIn
+    setInterval(() => {
+        currentTime++;
+        // To publish an event from this object is as easy as:
+        // We trigger the emitter via the emit() method,
+        // which pushes the event with the information we've provided.
+        timerEventEmitter.emit("update", currentTime);
+    }, 1000);
+    // The EventEmitter instance accepts an event name and an arbitrary set of arguments.
+    // In this case, we've passed the eventName as update and the currentTime as the time from the start of the application.
+
+    // With our event-emitter ready, let's subscribe an event-listener to it:
+    timerEventEmitter.on("update", (time) => {
+        console.log("Message received from publisher");
+        console.log(`${time} seconds passed since the program started`);
+    });
+
+    
+    By contrast, we can use the once() method to subscribe - 
+    if you need to execute something only the first time an event triggers:
+
+    timerEventEmitter.once('update', (time) => {
+        console.log('Message Received from publisher');
+        console.log(`${time} seconds passed since the program started`);
+    });
+
+-------------------------------------------------------------------------------------------
+
+EventEmitter with Multiple Listeners
+    create multipleListeners.js
+
+    Now, let's make a different kind of event-emitter with three listeners. 
+    This one will be a countdown. 
+    One listener will update the user on each second, 
+    one listener will notify the user when the countdown is nearing its end 
+    and the last listener will trigger once the countdown has ended:
+
+        update - This event will trigger on every second
+        end - This event will trigger at the end of the countdown
+        end-soon - This event will trigger 2 seconds before the countdown is finished
+
+    // snippet : req
+    // invoke EventEmitter from events
+    const { EventEmitter } = require("events");
+
+    // In this function, we have started an interval-based event
+    // that emits the update event in an interval of a second.
+    // snippet : nfn
+    const countDown = (countdownTime) => {
+    // create EventEmitter
+    const eventEmitter = new EventEmitter();
+    let currentTime = 0;
+
+    //   snippet : seti
+    const timer = setInterval(() => {
+        currentTime++;
+        eventEmitter.emit("update", currentTime);
+
+        // At the first if condition, we check if the countdown has reached
+        // the end and stop the interval-based event.
+        // If so, we fire an end event.
+        // check if countdown reached the end
+        // snippet : if
+        if (currentTime === countdownTime) {
+        clearInterval(timer);
+        // end eventEmitter
+        eventEmitter.emit("end");
+        }
+
+        // In the second condition, we check if the countdown is 2 seconds
+        //  away from ending, and publish the end-soon event if so.
+        // check if countdown will end in 2 seconds
+        if (currentTime === countdownTime - 2) {
+        eventEmitter.emit("end-soon");
+        }
+    }, 1000);
+    return eventEmitter;
+    };
+
+    // Now, let's add a few subscribers to this event emitter:
+
+    const myCountDown = countDown(7);
+
+    myCountDown.on("update", (t) => {
+    console.log(`${t} seconds since the timer started`);
+    });
+
+    myCountDown.on("end", () => {
+    console.log(`Countdown is completed`);
+    });
+
+    myCountDown.on("end-soon", () => {
+    console.log(`Countdown will end in 2 seconds`);
+    });
+
+    // terminal output
+    // C:\Users\donat\Documents\stackabuse-event-emitter>node multipleListeners
+    // 1 seconds since the timer started
+    // 2 seconds since the timer started
+    // 3 seconds since the timer started
+    // 4 seconds since the timer started
+    // 5 seconds since the timer started
+    // Countdown will end in 2 seconds
+    // 6 seconds since the timer started
+    // 7 seconds since the timer started
+    // Countdown is completed
+
+-------------------------------------------------------------------------------------------
+
+Extending EventEmitter,
+    create extendedEmitter.js
+
+    Let's make an event emitter with the same functionality, 
+    by extending the EventEmitter class. 
+    First, create a CountDown class that will handle the events:
+
+-------------------------------------------------------------------------------------------
+
+error encountered :
+
+    ReferenceError: Must call super constructor in derived class before accessing 'this' or returning from derived constructor
+        at new CountDown (C:\Users\donat\Documents\stackabuse-event-emitter\extendedEmitter.js:9:5)    
+        at Object.<anonymous> (C:\Users\donat\Documents\stackabuse-event-emitter\extendedEmitter.js:35:21)
+
+solution :
+
+    need to add on the constructor : super()
+
+-------------------------------------------------------------------------------------------
+
+Important Functions of EventEmitter
+
+    eventNames()
+        This function will return all active listener names as an array:
+
+    const myCountDown = new CountDown(5);
+
+    myCountDown.on('update', (t) => {
+        console.log(`${t} seconds has been passed since the timer started`);
+    });
+
+    myCountDown.on('end', () => {
+        console.log('Countdown is completed');
+    });
+
+    myCountDown.on('end-soon', () => {
+        console.log('Count down will be end in 2 seconds');
+    });
+
+    console.log(myCountDown.eventNames());
+    
+    Running this code will result in:
+
+        [ 'update', 'end', 'end-soon' ]
+
+    If we were to subscribe to another event such as 
+    myCount.on('some-event', ...), 
+    the new event will be added to the array as well.
+
+    Keep in mind that this method does not return the published events. 
+    It returns a list of events that are subscribed to it.
+
+-------------------------------------------------------------------------------------------
+
+removeListener()
+    create removeListener.js
+
+    // snippet : req
+    // invoke EventEmitter from events
+    const { EventEmitter } = require("events");
+
+    // create EventEmitter
+    const emitter = new EventEmitter();
+
+    // snippet : nfn
+    const f1 = () => {
+    console.log(`f1 triggered`);
+    };
+
+    // snippet : nfn
+    const f2 = () => {
+    console.log(`f2 triggered`);
+    };
+
+    // oinvoke the functions on event emiiter
+    emitter.on("some-event", f1);
+    emitter.on("some-event", f2);
+
+    // call the emitters
+    emitter.emit("some-event");
+
+    // remove emitter f1
+    emitter.removeListener("some-event", f1);
+
+    // call the emitters
+    emitter.emit("some-event");
+
+    // terminal output
+    // C:\Users\donat\Documents\stackabuse-event-emitter>node removeListener
+    // f1 triggered
+    // f2 triggered
+    // f2 triggered
+
+    // removeAllListeners()
+    // Again, as the name suggests -
+    // this function will remove all listeners
+    // from all events of an EventEmitter:
+
+-------------------------------------------------------------------------------------------
+
+Error Handling
+    create errorHandling.js
+
+    // snippet : req
+    const { EventEmitter } = require("events");
+
+    class CountDown extends EventEmitter {
+    // create constructor
+    constructor(countdownTime) {
+        super();
+
+        if (countdownTime < 2) {
+        console.log(countdownTime);
+        this.emit(
+            "error",
+            new Error("value of the countdownTimer cannot be less than 2")
+        );
+        }
+
+        this.countdownTime = countdownTime;
+        this.currentTime = 0;
+    }
+    }
+
+    const myCountDown = new CountDown(1);
+
+-------------------------------------------------------------------------------------------
+
+Native Modules using EventEmitter
+    create streamEventEmitter.js
+
+    // snipet  : req-fs
+    const fs = require("fs");
+    const writer = fs.createWriteStream("example.txt");
+
+    for (let i = 0; i < 100; i++) {
+    writer.write(`hello #${i}\n`);
+    }
+
+    writer.on("finish", () => {
+    console.log(`all writes are now complete`);
+    });
+
+    writer.end(`this is the end\n`);
+
+    // However, between the writing operation and the writer.end() call, we've added a listener.
+    // Streams emit a finished event upon completion. Other events, such as error, pipe and
+    // unpipe are emitted when an error occurs or a read-stream is piped to or unpiped from a write-stream.
+
+
+-------------------------------------------------------------------------------------------
+
