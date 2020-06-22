@@ -1,0 +1,438 @@
+reference : https://stackabuse.com/making-asynchronous-http-requests-in-javascript-with-axios/
+
+----------------------------------------------------------------------------------------------------------
+
+create new folder then initialize NPM with default setting (-y)
+    C:\Users\donat\Documents>mkdir stackabuse-axios-tutorial
+    C:\Users\donat\Documents>cd stackabuse-axios-tutorial
+    C:\Users\donat\Documents\stackabuse-axios-tutorial>npm init -y
+    Wrote to C:\Users\donat\Documents\stackabuse-axios-tutorial\package.json:
+
+    {
+    "name": "stackabuse-axios-tutorial",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+    }
+
+install axios
+    C:\Users\donat\Documents\stackabuse-axios-tutorial>npm i axios
+    npm notice created a lockfile as package-lock.json. You should commit this file.
+    npm WARN stackabuse-axios-tutorial@1.0.0 No description
+    npm WARN stackabuse-axios-tutorial@1.0.0 No repository field.
+
+    + axios@0.19.2
+    added 4 packages from 7 contributors and audited 4 packages in 1.122s
+    found 0 vulnerabilities
+
+----------------------------------------------------------------------------------------------------------
+
+create getRequestPromise.js
+
+    const axios = require('axios');
+
+    axios.get('https://jsonplaceholder.typicode.com/posts')
+        .then(resp => {
+            console.log(resp.data);
+        })
+        .catch(err => {
+            // Handle Error Here
+            console.error(err);
+        });
+
+    To make a GET request, we pass the URL of the resource as the argument in the axios.get() method.
+
+----------------------------------------------------------------------------------------------------------
+
+create getRequestAsyncAwait.js
+
+    // snippet : req-ax
+    const axios = require("axios");
+
+    // snippet : nfn
+    const sendGetRequestAsyncAwait = async () => {
+    // snippet : try
+    try {
+        const resp = await axios.get("https://jsonplaceholder.typicode.com/posts");
+        console.log(resp.data);
+    } catch (error) {
+        console.log(error);
+    }
+    };
+
+    sendGetRequestAsyncAwait();
+
+    To use the async/await syntax, we need to wrap the axios.get() function call within an async function. 
+    We encase the method call with a try...catch block so that we can capture any errors, similar to the catch() method we used in the Promise version. 
+    The variable that received the HTTP data had to use the await keyword to ensure the asynchronous data was received before continuing. 
+    From here on out, we'll only use the async/await syntax in our examples.
+
+----------------------------------------------------------------------------------------------------------
+
+An Axios response for an HTTP request (the resp object in the example) will contain the following information about the HTTP response:
+
+    data -  The response body provided by the server. 
+            If the response from the server is a JSON, 
+            Axios will automatically parse data into a JavaScript object.
+    status - The HTTP status code from the response e.g. 200, 400, 404.
+    statusText - The HTTP status message from the server response
+                 e.g. OK, Bad Request, Not Found.
+    headers - The HTTP headers accompanying the response.
+    config - The configuration that was provided to the Axios API for the request.
+    request -   The native request that generated the response. 
+                In Node.js this will be a ClientRequest object. 
+                In the browser, this will be an XMLHTTPRequest object.
+
+    Now that we've seen how to make a GET request with Axios, 
+    let's look at how to make a POST request.
+
+----------------------------------------------------------------------------------------------------------
+
+Sending POST Requests
+    create postRequest.js
+
+    // invoke axios
+    // snippet : req-ax
+    const axios = require("axios");
+
+    // create Post object to be added
+    const newPost = {
+    userId: 1,
+    title: "A new post",
+    body: "This is the body of the new post",
+    };
+
+    // snippet : nfn
+    const sendPostRequest = async () => {
+    // snippet : try
+    try {
+        const resp = await axios.post(
+        "https://jsonplaceholder.typicode.com/posts",
+        newPost
+        );
+        console.log(resp.data);
+    } catch (error) {
+        console.log(error);
+    }
+    };
+
+    // initiate the call
+    sendPostRequest();
+
+    To send a POST with axios.post() you must first supply the URL, 
+    and then provide the request data in the second argument. 
+    In this case, we are sending the data in the newPost variable, 
+    which will be sent to our API as JSON.
+
+----------------------------------------------------------------------------------------------------------
+
+Sending PUT Requests
+    create putRequest.js
+
+    // invoke axios
+    // snippet : req-ax
+    const axios = require("axios");
+
+    // create Post object to be added
+    const updatePost = {
+    userId: 1,
+    title: "A new post",
+    body: "This is the body of the new post",
+    };
+
+    // snippet : nfn
+    const senPutRequest = async () => {
+    // snippet : try
+    try {
+        const resp = await axios.put(
+        "https://jsonplaceholder.typicode.com/posts/1",
+        updatePost
+        );
+        console.log(resp.data);
+    } catch (error) {
+        console.log(error);
+    }
+    };
+
+    // initiate the call
+    senPutRequest();
+
+    Like with POST, we provide the URL and the data we want to be uploaded
+
+----------------------------------------------------------------------------------------------------------
+
+Sending DELETE Requests
+    create deleteRequest.js
+
+    // invoke axios
+    // snippet : req-ax
+    const axios = require("axios");
+
+    // snippet : nfn
+    const deleteRequest = async () => {
+    // snippet : try
+    try {
+        const resp = await axios.delete(
+        "https://jsonplaceholder.typicode.com/posts/1"
+        );
+        console.log(resp.data);
+    } catch (error) {
+        console.log(error);
+    }
+    };
+
+    // initiate the call
+    deleteRequest();
+
+    The axios.delete() function only needs the URL 
+    of the resource we want to remove.
+
+----------------------------------------------------------------------------------------------------------
+
+error encountered :
+
+    C:\Users\donat\Documents\stackabuse-axios-tutorial>node getRequestAsyncAwait
+    Error: connect ETIMEDOUT 104.28.29.31:443
+        at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1128:14) {
+    errno: 'ETIMEDOUT',
+    code: 'ETIMEDOUT',
+    syscall: 'connect',
+    address: '104.28.29.31',
+    port: 443,
+    config: {
+        url: 'https://jsonplaceholder.typicode.com/posts',
+        method: 'get',
+        headers: {
+        Accept: 'application/json, text/plain, */*',
+        'User-Agent': 'axios/0.19.2'
+        },
+        transformRequest: [ [Function: transformRequest] ],
+        transformResponse: [ [Function: transformResponse] ],
+        timeout: 0,
+        adapter: [Function: httpAdapter],
+        xsrfCookieName: 'XSRF-TOKEN',
+        xsrfHeaderName: 'X-XSRF-TOKEN',
+        maxContentLength: -1,
+        validateStatus: [Function: validateStatus],
+        data: undefined
+    },
+    request: Writable {
+        _writableState: WritableState {
+        objectMode: false,
+        highWaterMark: 16384,
+        finalCalled: false,
+        needDrain: false,
+        ending: false,
+        ended: false,
+        finished: false,
+        destroyed: false,
+        decodeStrings: true,
+        defaultEncoding: 'utf8',
+        length: 0,
+        writing: false,
+        corked: 0,
+        sync: true,
+        bufferProcessing: false,
+        onwrite: [Function: bound onwrite],
+        writecb: null,
+        writelen: 0,
+        bufferedRequest: null,
+        lastBufferedRequest: null,
+        pendingcb: 0,
+        prefinished: false,
+        errorEmitted: false,
+        emitClose: true,
+        autoDestroy: false,
+        bufferedRequestCount: 0,
+        corkedRequestsFree: [Object]
+        },
+        writable: true,
+        _events: [Object: null prototype] {
+        response: [Function: handleResponse],
+        error: [Function: handleRequestError]
+        },
+        _eventsCount: 2,
+        _maxListeners: undefined,
+        _options: {
+        protocol: 'https:',
+        maxRedirects: 21,
+        maxBodyLength: 10485760,
+        path: '/posts',
+        method: 'GET',
+        headers: [Object],
+        agent: undefined,
+        agents: [Object],
+        auth: undefined,
+        hostname: 'jsonplaceholder.typicode.com',
+        port: null,
+        nativeProtocols: [Object],
+        pathname: '/posts'
+        },
+        _redirectCount: 0,
+        _redirects: [],
+        _requestBodyLength: 0,
+        _requestBodyBuffers: [],
+        _onNativeResponse: [Function],
+        _currentRequest: ClientRequest {
+        _events: [Object: null prototype],
+        _eventsCount: 6,
+        _maxListeners: undefined,
+        outputData: [],
+        outputSize: 0,
+        writable: true,
+        _last: true,
+        chunkedEncoding: false,
+        shouldKeepAlive: false,
+        useChunkedEncodingByDefault: false,
+        sendDate: false,
+        _removedConnection: false,
+        _removedContLen: false,
+        _removedTE: false,
+        _contentLength: 0,
+        _hasBody: true,
+        _trailer: '',
+        finished: true,
+        _headerSent: true,
+        socket: [TLSSocket],
+        connection: [TLSSocket],
+        _header: 'GET /posts HTTP/1.1\r\n' +
+            'Accept: application/json, text/plain, */*\r\n' +
+            'User-Agent: axios/0.19.2\r\n' +
+            'Host: jsonplaceholder.typicode.com\r\n' +
+            'Connection: close\r\n' +
+            '\r\n',
+        _onPendingData: [Function: noopPendingOutput],
+        agent: [Agent],
+        socketPath: undefined,
+        method: 'GET',
+        path: '/posts',
+        _ended: false,
+        res: null,
+        aborted: false,
+        timeoutCb: null,
+        upgradeOrConnect: false,
+        parser: null,
+        maxHeadersCount: null,
+        _redirectable: [Circular],
+        [Symbol(kNeedDrain)]: false,
+        [Symbol(isCorked)]: false,
+        [Symbol(kOutHeaders)]: [Object: null prototype]
+        },
+        _currentUrl: 'https://jsonplaceholder.typicode.com/posts'
+    },
+    response: undefined,
+    isAxiosError: true,
+    toJSON: [Function]
+    }
+
+solution :
+
+    too slow internet connection FUCK!!!!!!
+    just try running it again
+
+----------------------------------------------------------------------------------------------------------
+
+Configuring Requests
+    create configRequest.js
+
+    // snippet : req-ax
+    const axios = require("axios");
+
+    // snippet : nfn
+    const sendConfigRequest = async () => {
+    // snippet : try
+    try {
+        const resp = await axios({
+        method: "PUT",
+        url: "https://jsonplaceholder.typicode.com/posts/1",
+        data: {
+            id: 1,
+            userId: 1,
+            title: "A new title",
+            body: "Update this post",
+        },
+        });
+
+        console.log(resp.data);
+    } catch (error) {
+        console.log(error);
+    }
+    };
+
+    sendConfigRequest();
+
+
+    In this case, we use axios as a function directly. 
+    We pass it a JavaScript function that contains the HTTP method being used in the method, 
+    the API endpoint in the url and any data in the request in the data property.
+
+    The end result is the same, so you can use this way 
+    of making requests if it appeals to you more.
+
+    Now that we have a handle on sending requests, 
+    let's modify them by setting custom headers.
+
+----------------------------------------------------------------------------------------------------------
+
+Set Custom Headers
+    create customHeader.js
+
+    For certain APIs, a raw request needs to have additional data in headers to be processed. 
+    A common example would be to set headers that authenticate the HTTP request.
+
+    If we used JWTs for Authentication and Authorization, 
+    we would have to add it to our requests so it won't be rejected by the API server.
+
+
+    // snippet : req-ax
+    const axios = require("axios");
+
+    // snippet : nfn
+    const sendCustomeHeaderRequest = async () => {
+    // snippet : try
+    try {
+        const resp = await axios.get("https://jsonplaceholder.typicode.com/posts", {
+        headers: {
+            authorization: "Bearer YOUR_JWT_TOKEN_HERE",
+        },
+        });
+        console.log(resp.data);
+    } catch (error) {
+        console.log(error);
+    }
+    };
+
+    sendCustomeHeaderRequest();
+
+    // Next, let's see how we can set a custom header
+    // using the Axios API configuration:
+
+    // axios({
+    //   method: "GET",
+    //   url: "https://jsonplaceholder.typicode.com/posts",
+    //   header: {
+    //     authorization: "Bearer YOUR_JWT_TOKEN_HERE",
+    //   },
+    // })
+    //   // snippet : thenc
+    //   .then((resp) => {
+    //     console.log(resp.data);
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
+
+
+    You can add this property to the other Axios methods such as axios.post(), axios.put(), axios.delete(). 
+    The headers property should be entered after the data object in axios.post() and axios.put().
+
+----------------------------------------------------------------------------------------------------------
+
+
+
