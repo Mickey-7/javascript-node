@@ -1,0 +1,134 @@
+reference : https://stackabuse.com/node-js-express-examples-rendered-rest-and-static-websites/
+
+---------------------------------------------------------------------------------------------------------------
+
+REST APIs
+    Ready to get your world turned upside down? Welcome to REST APIs. 
+    The acronym stands for Representative State Transfer. 
+    But you will never need to remember that. 
+    What's important though is to understand the logic 
+    behind how REST works and why it is the preferred type of data delivery.
+
+    The core lies in creating an API, an Application Program Interface, 
+    to send and receive data in JSON format. 
+    REST APIs are used to interact with databases to store data in a persistent manner. 
+    Lucky for us, using REST with Express is easy.
+
+    Let's check it out in action.
+
+    For this example we only need two modules. 
+        
+        Express and body-parser. 
+
+            npm init && npm install express body-parser
+---------------------------------------------------------------------------------------------------------------
+
+We only need two files to make the sample app work so go ahead and create an app.js and a server.js.
+   
+---------------------------------------------------------------------------------------------------------------
+
+app.js
+
+    // snippet : req-ex
+    const express = require("express");
+
+    const app = express();
+
+    // snippet : req
+    const bodyParser = require("body-parser");
+
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({ extended: false }));
+
+    app.get("/", function (req, res) {
+    let data = {
+        message: "Hello world",
+    };
+    res.status(200).send(data);
+    });
+
+    app.post("/", function (req, res) {
+    let data = {
+        response: `you sent : ${req.body.message}`,
+    };
+
+    res.status(200).send(data);
+    });
+
+    module.exports = app;
+
+---------------------------------------------------------------------------------------------------------------
+
+server.js
+
+    // snippet : req
+    const app = require("./app");
+
+    const port = 4040;
+
+    app.listen(port, function () {
+      console.log(`express server listening on port ${port}`);
+    });
+
+---------------------------------------------------------------------------------------------------------------
+
+The layout of the app.js is very similar to the server-rendered example. 
+    The only real difference is that we send back a JSON object as the response of the get() method. 
+    Let's break it down.
+
+    At the top we again require express, and create an app object. 
+    But, we also require body-parser.
+     This is an awesome Express middleware module for parsing the body of an incoming HTTP request. 
+     It adds an object to Express' req object inside the app methods. 
+     So when we post some data to the '/' route we have access to that data in the req.body object. 
+     Awesome!
+
+---------------------------------------------------------------------------------------------------------------
+    
+To test this out fire up a tool like Postman or any other REST client testing tool you like. 
+    If you've never heard of this before, don't panic, you can check it out here..
+
+    Fire up the server.js and open up Postman.
+
+        node server.js
+
+    In Postman (or any other REST client tool) start off 
+    by sending a GET request to http://localhost:4040/:
+
+    GET     http://localhost:4040/      SEND
+
+        {
+            "message": "Hello world"
+        }
+
+    Now send a POST request to the same url:
+
+    Enter a "message" as JSON data into the body of the request and hit "Send". 
+
+    POST    http://localhost:4040/      SEND
+
+        {
+            "message" : "fuck"
+        }
+
+    The message you send to the endpoint should get sent back to you like this:
+
+        {
+            "response": "you sent : fuck"
+        }
+        
+    Switch back to the code and let's explain what's going on. 
+    In the POST route, we take the value from req.body.message 
+    and assign it to the data variable with our own short message. 
+    Then we send the data back in the response with a status of 200.
+
+    Requests like these which are used solely as means of transferring data to 
+    and from a server are used to store data in persistent storage such as databases. 
+    This is what REST APIs are awesome at. 
+    In today's world they thrive because they work in unison 
+    with both mobile and web applications as their data storage.
+
+
+---------------------------------------------------------------------------------------------------------------
+
+
