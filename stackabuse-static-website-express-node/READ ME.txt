@@ -1,0 +1,77 @@
+reference : https://stackabuse.com/node-js-express-examples-rendered-rest-and-static-websites/
+
+------------------------------------------------------------------------------------------------------------
+
+Static Websites
+    What if we don't need any cool template rendering, nor interaction with a database? 
+    What if we just want a cool landing page, an awesome proof of concept page, or a static file server?
+
+    Let's ignore all the complicated use cases we mentioned above 
+    and focus on the foundations the World Wide Web is based upon. 
+    Serving HTML documents.
+
+    Express can be turned into a simple HTTP web server for serving static HTML pages.
+    The process is dead simple. 
+    What's needed is to specify a location which will be viewed as a static directory.
+
+    Let's dive in.
+
+------------------------------------------------------------------------------------------------------------
+
+Create the same two files as the examples above, an app.js and a server.js.
+    You'll only need to install express for this example.
+
+        npm init && install express 
+
+------------------------------------------------------------------------------------------------------------
+
+app.js
+
+    // snippet : req-ex
+    const express = require("express");
+    const app = express();
+
+    app.use("/", express.static("html"));
+
+    module.exports = app;
+
+    // The app is set to .use() the html folder to serve static files.
+    // Meaning the route to the resource in the url will not look for routes in the Express app,
+    // instead search the file system for the requested file.
+
+------------------------------------------------------------------------------------------------------------
+
+server.js
+
+    // snippet : req
+    const app = require("./app");
+    const port = 5050;
+
+    app.listen(port, function () {
+        console.log("Express server listening on port " + port);
+    });
+
+------------------------------------------------------------------------------------------------------------
+
+Create a folder called 'html' and add two files named 'index.html' and 'about.html'. 
+    The content of the files does not matter, I've just added some text to know which one is which.
+
+        <!-- index.html -->
+        <h1>index</h1>
+
+        <!-- about.html -->
+        <h1>about</h1>
+
+    That's all. Go ahead, spin up the server 
+    and open up a browser and head to http://localhost:5050, 
+    which should show a page with the word "index" on it.
+
+    You can see by requesting the '/' route the index.html has been loaded by default.
+    You can switch to '/about.html' and the 'about' HTML file will be loaded. 
+    This principle works with any type of file. 
+    You can add an image to this folder as well, 
+    and it will be displayed the same way if you navigated to it though the URL.
+
+------------------------------------------------------------------------------------------------------------
+
+
