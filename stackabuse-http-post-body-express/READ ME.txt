@@ -1,0 +1,127 @@
+reference : https://stackabuse.com/get-http-post-body-in-express-js/
+
+----------------------------------------------------------------------------------------------------------
+
+Sending POST Data in HTTP
+    Data can be sent via an HTTP POST call for many reasons, 
+    with some of the most common being via an HTML <form> or an API request. 
+    The data can take on a few different forms, with the most common being:
+
+    application/x-www-form-urlencoded: 
+        Data in this encoding is formatted like a query string you'd see in a URL, 
+        with key-value paris being separated by & characters. 
+            For example: foo=bar&abc=123&stack=abuse. This is the default encoding.
+
+    multipart/form-data: 
+        This encoding is typically used for sending files. 
+        In short, each key-value is sent in the same request, 
+        but different "parts", which are separated 
+        by "boundaries" and include more meta-data.
+
+    text/plain: 
+        This data is just sent as unstructured plain text, 
+        and typically is not used.
+
+    A raw HTTP POST request with the application/x-www-form-urlencoded 
+    encoding might look something like this:
+
+        POST /signup HTTP/1.1
+        Host: example.com
+        Content-Type: application/x-www-form-urlencoded
+        Content-Length: 53
+
+        username=scott&password=secret&website=stackabuse.com
+
+----------------------------------------------------------------------------------------------------------
+
+Extracting POST Data
+    Before we can get started accessing POST data right away, 
+    we need to properly configure our Express app. 
+    This configuration needs to be done since not all web app servers need body parsing, 
+    and what body parsing is enabled depends on your application.
+
+    To set this up, we'll be using the body-parser package, 
+    which can handle many forms of data. 
+    This package is a middleware that intercepts the raw body 
+    and parses it in to a form that your application code can easily use.
+
+        // index.js
+        const express = require('express');
+        const bodyParser = require('body-parser');
+
+        const app = express();
+        app.use(bodyParser.urlencoded({ extended: true }));
+
+        app.post('/post-test', (req, res) => {
+            console.log('Got body:', req.body);
+            res.sendStatus(200);
+        });
+
+        app.listen(8080, () => console.log(`Started server at http://localhost:8080!`));
+
+    Notice how we call app.use(...) before defining our route. 
+    The order here matters. 
+    This will ensure that the body-parser will run before our route, 
+    which ensures that our route can then access the parsed HTTP POST body.
+
+----------------------------------------------------------------------------------------------------------
+
+To test this, we'll first start the Express app and then use 
+    the curl utility in a different console window:
+
+    terminal1:
+        C:\Users\donat\Documents\stackabuse-http-post-body-express>node index
+        started server at port 8080
+
+    terminal2:
+       C:\Users\donat\Documents\stackabuse-http-post-body-express>curl -d "username=scott&password=secret&website=stackabuse.com" -X POST http://localhost:8080/post-test
+
+    terminal1:
+        C:\Users\donat\Documents\stackabuse-http-post-body-express>node index
+        started server at port 8080
+        got body : {"username":"scott","password":"secret","website":"stackabuse.com"}
+
+    Here you can see that the query string data was parsed 
+    in to a JavaScript object that we can easily access.
+
+    Another important thing to note is our use of the 
+    extended option when calling bodyParser.urlencoded. 
+    Using the extended option tells body-parser to use 
+    the qs library to parse the URL-encoded data. 
+
+    This allows for things like objects and arrays to be encoded into the URL-encoded format.
+
+----------------------------------------------------------------------------------------------------------
+
+And while urlencoded is one of the most commonly used parsers that body-parser provides, 
+    you can also use the following:
+
+    .json(): Parses JSON-formatted text for bodies with a Content-Type of application/json.
+    .raw(): Parses HTTP body in to a Buffer for specified custom Content-Types, 
+            although the default accepted Content-Type is application/octet-stream.
+    .text(): Parses HTTP bodies with a Content-Type of text/plain, which returns it as a plain string.
+
+    Each of these parsers also supports automatic inflation of data encoded with gzip or deflate, 
+    so compression can still be transparently used without any extra work by your application code.
+
+----------------------------------------------------------------------------------------------------------
+
+The great thing about the middleware model and how this package parses data is that you're not stuck to using just one parser. 
+    You can enable one or more parsers for your app to ensure that all data types are processed properly:
+
+    // index1.js
+    const express = require('express');
+    const bodyParser = require('body-parser');
+
+    const app = express();
+    app.use(bodyParser.urlencoded({ extended: true }));
+    app.use(bodyParser.json());
+    app.use(bodyParser.raw());
+    
+----------------------------------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------
+
