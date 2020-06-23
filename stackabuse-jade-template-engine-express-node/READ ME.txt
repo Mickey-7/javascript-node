@@ -1,0 +1,121 @@
+reference : https://stackabuse.com/node-js-express-examples-rendered-rest-and-static-websites/
+
+--------------------------------------------------------------------------------------------------------------------
+
+Server Rendered Applications
+    You can guess how these apps work from the title right? 
+    The HTML pages rendered in a user's browser are generated and rendered on the server. 
+    This process is called server rendering. 
+    Apps like these consist of templating engines and templates. 
+    The engines generate the final HTML page to be rendered. 
+    Some popular engines include Jade, Pug and EJS.
+
+--------------------------------------------------------------------------------------------------------------------
+
+Create a new directory and open up a terminal window. 
+    Init npm in the directory and install the following modules.
+
+        express & pug
+
+    The structure of this project is very simple.
+    An app.js file for all app configurations, 
+    a server.js file for spinning up an http server 
+    and a views folder where all our templates will be stored. 
+
+--------------------------------------------------------------------------------------------------------------------
+
+First, create the app.js file and paste this snippet of code into it.
+
+        // copy this into your app.js
+        const express = require('express');
+        const path = require('path');
+        const app = express();
+
+        // view engine setup
+        app.set('views', path.join(__dirname, 'views'));
+        app.set('view engine', 'jade');
+
+        app.get('/', function(req, res, next) {
+            res.render('index', { title: 'Hello World!' });
+        });
+
+        module.exports = app;
+
+    Okay, what's going on here? We're requiring express and instantiating the app object. 
+    The path module is a built-in Node module that provides 
+    a way of working with files and directories. 
+    We use it in this example to make sure our file paths work on all platforms.
+
+    Then we set the the view engine and the folder where our templates are located. 
+    The view engine we'll be using in this sample will be Jade, but any view engine is fine here.
+
+    Now comes the fun part, see the .get() method on the app object? 
+    It takes 2 parameters. First a route, then a callback function. 
+    When the '/' route is hit, the callback will be invoked. 
+    This will trigger the rendering of the index template, 
+    with a interpolated variable named title with the value of 'Hello World!'. 
+
+    Finally we export the app to have access to it in other files.
+
+--------------------------------------------------------------------------------------------------------------------
+
+Awesome! With that out of the way, let's create the server.js file and add this snippet.
+
+        const app = require('./app');
+        const port = 3030;
+
+        app.listen(port, function() {
+            console.log('Express server listening on port ' + port);
+        });
+
+    Here we require the app.js file and tell it to listen on port 3030.
+
+--------------------------------------------------------------------------------------------------------------------
+
+There's only one more thing to do, create the 'views' folder with some templates. 
+    Go ahead and add the 'views' folder now, and drop in these two templates.
+
+    <!-- layout.jade -->
+    doctype html
+    html
+    head
+        title= title
+    body
+        block content
+
+    <!-- index.jade -->
+    extends layout
+
+    block content
+    h1= title
+    p Welcome to #{title}
+
+    As you can see the syntax for the jade templating engine is pretty freaky compared to regular HTML. 
+    But don't let it fool you. In the end, it will be rendered as regular HTML in the browser. 
+    See the funny looking #{title}? This is the interpolation I mentioned above. 
+    The title variable from the callback function was passed along to the view, 
+    getting rendered as the value which was provided.
+
+--------------------------------------------------------------------------------------------------------------------
+
+Your final folder structure of the sample app should look something like this.
+
+    > node_modules
+    > views
+        - index.jade
+        - layout.jade
+    - app.js
+    - package.json
+    - package-lock.json // this file will be present only if you have NPM version 5 or above.
+    - server.js 
+
+    run the server by typing on terminal
+
+        node server
+
+    and on web browser
+
+        localhost:3030
+
+--------------------------------------------------------------------------------------------------------------------
+
