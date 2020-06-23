@@ -1,0 +1,76 @@
+reference : https://stackabuse.com/writing-to-files-in-node-js/
+
+--------------------------------------------------------------------------------------------------------------
+
+Method 1: Using fs.writeFile
+    create usingWriteFile.js
+
+    // snippet : fs
+    const fs = require("fs");
+
+    let lyrics =
+    "But still I'm having memories of high speeds when the cops crashed\n" +
+    "As I laugh, pushin the gas while my Glocks blast\n" +
+    "We was young and we was dumb but we had heart";
+
+    fs.writeFile("2pac.txt", lyrics, (err) => {
+    if (err) {
+        throw err;
+    }
+    console.log("Lyrics saved!");
+    });
+
+--------------------------------------------------------------------------------------------------------------
+
+Method 2: Using fs.write
+    create usingWrite.js
+
+    // snippet : req
+    const fs = require("fs");
+
+    // specify the path to the file, and create a buffer with characters we want to write
+    let path = "ghetto_gospel.txt";
+    let buffer = new Buffer.from(
+    "Those who wish to follow me\nI welcome with my hands\nAnd the red sun sinks at last"
+    );
+
+    // open the file in writing mode, adding a callback function where we do the actual writing
+    fs.open(path, "w", function (err, fd) {
+    if (err) {
+        throw `could not open file : ${err}`;
+    }
+    // write the contents of the buffer, from position 0 to the end,
+    // to the file descriptor returned in opening our file
+    fs.write(fd, buffer, 0, buffer.length, null, function (err) {
+        if (err) {
+        throw `error writing file : ${err}`;
+        }
+        fs.close(fd, function () {
+        console.log(`wrote the file successfully!`);
+        });
+    });
+    });
+
+--------------------------------------------------------------------------------------------------------------
+
+Method 3: Using fs.createWriteStream
+    create createWriteStream.js
+
+    // snippet : req
+    const fs = require("fs");
+
+    let writeStream = fs.createWriteStream("secret.txt");
+
+    // write some data with a base64 encoding
+    writeStream.write("aef35ghhjdk74hja83ksnfjk888sfsf", "base64");
+
+    // the finish event is emitted when all data has been flushed from the stream
+    writeStream.on("finish", () => {
+    console.log(`wrote all data to file`);
+    });
+
+    writeStream.end();
+
+--------------------------------------------------------------------------------------------------------------
+
+Error Handling when Writing to a File
