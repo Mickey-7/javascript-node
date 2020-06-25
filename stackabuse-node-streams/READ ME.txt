@@ -1,0 +1,148 @@
+reference : https://stackabuse.com/introduction-to-node-js-streams/
+
+-----------------------------------------------------------------------------------------
+
+Streams in Node.js
+    The Stream module is a native module that is shipped by default in Node.js. 
+    The Stream is an instance of the EventEmitter class, 
+    which handles events asynchronously in Node.js. 
+    Due to their superclass, streams are inherently event-based.
+
+    There are 4 types of streams in Node.js:
+
+        Writable:    Used to write data sequentially
+        Readable:    Used to read data sequentially
+        Duplex:      Used to both read and write data sequentially
+        Transform:   Where data can be modified when writing or reading. 
+                     Take compression for an example, with a stream like this 
+                     you can write compressed data and read decompressed data.
+
+-----------------------------------------------------------------------------------------
+
+Writable Streams
+    create writableStreams.js
+
+    // snippet : req
+    const fs = require("fs");
+    const file = fs.createWriteStream("file.txt");
+
+    file.write("hello world");
+    file.end(", from streams!");
+
+    // snippet : req
+    const fs1 = require("fs");
+    const file1 = fs1.createWriteStream("file1.txt");
+    for (let i = 0; i < 100; i++) {
+    file1.write(`hello world ${i}\n`);
+    }
+    file1.end();
+ 
+-----------------------------------------------------------------------------------------
+
+Readable Streams
+    create readableStreams.js
+
+    // snippet : req
+    const fs = require("fs");
+    const readableStream = fs.createReadStream("./file.txt", {
+    highWaterMark: 10,
+    });
+
+    readableStream.on("readable", () => {
+    process.stdout.write(`[${readableStream.read()}]`);
+    });
+
+    readableStream.on("end", () => {
+    console.log("DONE");
+    });
+
+-----------------------------------------------------------------------------------------
+
+Duplex Streams
+
+    // First, let's import the HTTP module:
+    // snippet : req
+    const http = require("http");
+
+    // Now let's create a simple HTTP server:
+    // snippet : nfn
+    const server = http.createServer((req, res) => {
+    // `req` is an http.IncomingMessage, which is a Readable Stream.
+    // `res` is an http.ServerResponse, which is a Writable Stream.
+
+    let body = "";
+
+    // Get the data as utf8 strings.
+    // If an encoding is not set, Buffer objects will be received.
+    req.setEncoding("utf8");
+
+    // Readable streams emit 'data' events once a listener is added.
+    req.on("data", (chunk) => {
+        body += chunk;
+    });
+
+    // The 'end' event indicates that the entire body has been received.
+    req.on("end", () => {
+        console.log(body);
+
+        // snippet : try
+        try {
+        res.write("hello world");
+        res.end;
+        } catch (error) {
+        res.statusCode = 400;
+        return res.end(`error : ${error.message}`);
+        }
+    });
+    });
+
+    // Now, let's listen to the server:
+
+    server.listen(1337);
+
+-----------------------------------------------------------------------------------------
+
+Stream Pipelines
+
+    // First, let's do this without using streams:
+
+        // snippet : req-fs
+        const fs = require("fs");
+        // snippet : req-htt
+        const http = require("http");
+
+        const server = http.createServer();
+
+        server.on("request", (req, res) => {
+        fs.readFile("./Youtube2.png", (err, data) => {
+            if (err) {
+            throw err;
+            }
+            res.end(data);
+        });
+        });
+
+        server.listen(1337);
+
+
+    // type on terminal : node streamPipelines
+    // type on web browser : http://localhost:1337/request
+    // the picture will be rendered on the web page
+
+    // Now, let's serve the video using a stream:
+
+    // snippet : req-fs
+    const fs = require("fs");
+    // snippet : req-htt
+    const http = require("http");
+
+    // snippet : nfn
+    const server = http.createServer((req, res) => {
+        const src = fs.createReadStream("./Youtube2.png");
+        src.pipe(res);
+    });
+
+    server.listen(1337);
+
+-----------------------------------------------------------------------------------------
+
