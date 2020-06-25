@@ -1,0 +1,401 @@
+reference : https://stackabuse.com/introduction-to-javascript-proxies-in-es6/
+
+--------------------------------------------------------------------------------------------------------------
+
+What is a Proxy?
+    JavaScript proxies have the ability to change the fundamental behavior of objects and functions. 
+    We can extend the language to better suit our requirements or simply
+    use it for things like validation and access control on a property.
+
+    Until proxies were introduced, we did not have native level access 
+    to change the fundamental behavior of an object, nor a function.
+    But with them, we have the ability to act as a middle layer, 
+    to change how the object should be accessed, 
+    generate information such as how many times a function has been called, etc.
+
+--------------------------------------------------------------------------------------------------------------
+
+Property Proxy Example
+    Let's start with a simple example to see proxies in action. 
+    To get started, let's create a person object with firstName, lastName, and age properties:
+
+        const person = {
+            firstName: 'John',
+            lastName: 'Doe',
+            age: 21
+        };
+    
+    Now let's create a simple proxy by passing it to the Proxy constructor. 
+    It accepts parameters called the target and the handler. 
+    Both of these will be elaborated shortly.
+
+    Let's first create a handler object:
+
+        const handler = {
+            get(target, property) {
+                console.log(`you have read the property ${property}`);
+                return target[property];
+            }
+        };
+    
+--------------------------------------------------------------------------------------------------------------
+
+Proxy Target
+    The first parameter, target, is the object that you have attached the proxy to. 
+    This object will be used by the proxy to store data,
+    which means if you change the value of the target object 
+    the value of the proxy object will also change.
+
+    Just don't expose your object to the outside where the proxy will be used 
+    and everything should be fine.
+
+    A change in the original target object is still reflected in the proxy:
+
+        console.log(proxyPerson.age);
+        person.age = 20;
+        console.log(proxyPerson.age);
+
+        you have read the property age
+        21
+        you have read the property age
+        20
+
+--------------------------------------------------------------------------------------------------------------
+
+Proxy Handler
+
+    The second parameter to the Proxy constructor is the handler, 
+    which should be an object containing methods that describe 
+    the way you want to control the target's behavior. 
+    The methods inside this handler, for example the get() method, are called traps.
+
+    By defining a handler, such as the one we've defined in our earlier example, 
+    we can write custom logic for an object that otherwise doesn't implement it.
+
+    For example, you could create a proxy that updates a cache 
+    or database any time a property on the target object is updated.
+
+--------------------------------------------------------------------------------------------------------------
+
+The get() Trap
+    The get() trap fires when someone tries to access a specific property. 
+    In the previous example, we used this to print a sentence when the property was accessed.
+
+    As you may already know, JavaScript doesn't support private properties. 
+    So sometimes as a convention, developers use the underscore (_) in front of the property name, f
+    or example, _securityNumber, to identify it as a private property.
+
+    However, this does not actually enforce anything in the code level. 
+    Developers just know they should not directly access the 
+    properties that start with _. With proxies, we can change that.
+
+        const person = {
+            firstName: "John",
+            lastName: "Doe",
+            age: 21,
+            _ssn: "123-45-6789",
+        };
+
+        const handler = {
+        get(target, property) {
+            if (property[0] === "_") {
+            throw new Error(`${property} is a private property`);
+            }
+            return target[property];
+        },
+        };
+
+        const proxyPerson = new Proxy(person, handler);
+
+        console.log(proxyPerson._ssn);
+
+        // terminal output
+        // C:\Users\donat\Documents\stackabuse-proxy>node getTrap
+        // C:\Users\donat\Documents\stackabuse-proxy\getTrap.js:11
+        //       throw new Error(`${property} is a private property`);
+        //       ^
+
+        // Error: _ssn is a private property                                                    -> throw Error on code
+        //     at Object.get (C:\Users\donat\Documents\stackabuse-proxy\getTrap.js:11:13)
+        //     at Object.<anonymous> (C:\Users\donat\Documents\stackabuse-proxy\getTrap.js:19:25)
+        //     at Module._compile (internal/modules/cjs/loader.js:956:30)
+        //     at Object.Module._extensions..js (internal/modules/cjs/loader.js:973:10)
+        //     at Module.load (internal/modules/cjs/loader.js:812:32)
+        //     at Function.Module._load (internal/modules/cjs/loader.js:724:14)
+        //     at Function.Module.runMain (internal/modules/cjs/loader.js:1025:10)
+        //     at internal/main/run_main_module.js:17:11
+
+--------------------------------------------------------------------------------------------------------------
+
+The set() Trap
+
+    Now, let's take a look at the set() trap, 
+    which controls the behavior when setting values on a target object's property. 
+    To give you a clear example, let's assume that when you define a person object 
+    the value of the age should be in the range of 0 to 150.
+
+    As you may already know, JavaScript is a dynamic typing language, 
+    which means a variable can hold any type of value 
+    (string, number, bool, etc.) at any given time. 
+    So normally it's very difficult to enforce the age property to just hold integers.
+    However, with proxies, we can control the way we set the values for properties:
+
+        const person = {
+            firstName: "John",
+            lastName: "Doe",
+            age: 177,
+            _ssn: "123-45-6789",
+        };
+
+        const handler = {
+            set(target, property, value) {
+                if (property === "age") {
+                    if (!(typeof value === "number")) {
+                        throw new Error(`age should be a number`);
+                    }
+
+                    if (value < 0 || value > 150) {
+                        throw new Error("Age value should be in between 0 and 150");
+                    }
+                }
+                target[property] = value;
+            },
+        };
+
+        const proxyPerson = new Proxy(person, handler);
+        proxyPerson.age = 170;
+
+        // termianl output
+        // C:\Users\donat\Documents\stackabuse-proxy>node setTrap
+        // C:\Users\donat\Documents\stackabuse-proxy\setTrap.js:16
+        //         throw new Error("Age value should be in between 0 and 150");
+        //         ^
+
+        // Error: Age value should be in between 0 and 150                                  -> throw Error on the code
+        //     at Object.set (C:\Users\donat\Documents\stackabuse-proxy\setTrap.js:16:15)
+        //     at Object.<anonymous> (C:\Users\donat\Documents\stackabuse-proxy\setTrap.js:24:17)
+        //     at Module._compile (internal/modules/cjs/loader.js:956:30)
+        //     at Object.Module._extensions..js (internal/modules/cjs/loader.js:973:10)
+        //     at Module.load (internal/modules/cjs/loader.js:812:32)
+        //     at Function.Module._load (internal/modules/cjs/loader.js:724:14)
+        //     at Function.Module.runMain (internal/modules/cjs/loader.js:1025:10)
+
+    As you can see in this code, the set() trap accepts three parameters, which are:
+
+        target: The target object that the proxy attached to
+        property: The name of the property being set
+        value: The value which is assigned to the property
+
+    In this trap, we have checked if the property name is age, and if so, 
+    if it's also a number and value is between 0 and 150 - throwing an error if it's not.
+
+--------------------------------------------------------------------------------------------------------------
+
+The deleteProperty() Trap
+    
+    Now let's move on to the deleteProperty() trap which will be 
+    triggered when you try to delete a property from an object:
+
+        const person = {
+            firstName: "John",
+            lastName: "Doe",
+            age: 21,
+            _ssn: "123-45-6789",
+        };
+
+        const handler = {
+            deleteProperty(target, property) {
+                console.log(`you have been deleted ${property}`);
+                delete target[property];
+            },
+        };
+
+        const proxyPerson = new Proxy(person, handler);
+
+        delete proxyPerson.age;
+
+        // to check
+        console.log(proxyPerson.age);
+
+        // terminal output
+        // C:\Users\donat\Documents\stackabuse-proxy>node deleteTrap
+        // you have been deleted age
+        // undefined
+
+--------------------------------------------------------------------------------------------------------------
+
+The apply() Trap
+    The apply() trap is used to identify when a function call occurs on the proxy object. 
+    First of all, let's create a person with a first name and a last name:
+
+        const person = {
+            firstName: 'Sherlock',
+            lastName: 'Holmes'
+        };
+
+    Then a method to get the full name:
+
+        const getFullName = (person) => {
+            return person.firstName + ' ' + person.lastName;
+        };
+
+    Now, let's create a proxy method which will convert the function output 
+    to uppercase letters by providing an apply() trap inside our handler:
+
+        const getFullNameProxy = new Proxy(getFullName, {
+            apply(target, thisArg, args) {
+                return target(...args).toUpperCase();
+            }
+        });
+
+        console.log(getFullNameProxy(person));
+
+    As you can see in this code example, the apply() trap will be called when the function is called. 
+    It accepts three parameters - target, thisArg (which is the this argument for the call), 
+    and the args, which is the list of arguments passed into the function.
+
+    We have used the apply() trap to execute the target function with the given arguments 
+    using the ES6 spread syntax and converted the result to the uppercase. 
+    So you should see the uppercase full name:
+
+        SHERLOCK HOLMES
+
+--------------------------------------------------------------------------------------------------------------
+
+Computed Properties with Proxies
+
+    Computed properties are the properties that are calculated 
+    by performing operations on other existing properties. 
+    For an example, let's say we have a person object 
+    with the properties firstName and lastName. 
+    With this, the full name can be a combination of those properties, 
+    just like in our last example. Thus, the full name is a calculated property.
+
+    First, let's again create a person object with a first name and a last name:
+
+        const person = {
+            firstName: 'John',
+            lastName: 'Doe'
+        };
+
+    Then we can create a handler with the get() trap to return the calculated full name, 
+    which is achieved by creating a proxy of the person:
+
+        const handler = {
+            get(target, property) {
+                if (property === 'fullName') {
+                    return target.firstName + ' ' + target.lastName;
+                }
+
+                return target[property];
+            }
+        };
+
+        const proxyPerson = new Proxy(person, handler);
+
+    Now let's try accessing the full name of the proxy person:
+
+        console.log(proxyPerson.fullName);
+
+        John Doe
+
+    Using just the proxy we have created a "getter" method on the person object 
+    without having to actually change the original object itself.
+
+--------------------------------------------------------------------------------------------------------------
+
+Now, let's see another example that's more dynamic than what we've encountered thus far. 
+    This time instead of a returning just a property, 
+    we will return a function that is dynamically created based on the given function name.
+
+    Consider an array of people, where each object has an id of the person, 
+    name of the person and the age of the person. 
+    We need to query a person by the id, name, or age. 
+    So simply we can create few methods, getById, getByName, and getByAge. 
+    But this time we are going to take things somewhat further.
+
+    We want to create a handler that can do this for an array which may have any property. 
+    For example, if we have an array of books and each book has a property isbn, 
+    we should also be able to query this array using getByIsbn 
+    and the method should be dynamically generated on the runtime.
+
+    But for the moment let's create an array of people.
+
+        const people = [
+            {
+                id: 1,
+                name: "John Doe",
+                age: 21,
+            },
+
+            {
+                id: 2,
+                name: "Ann Clair",
+                age: 24,
+            },
+
+            {
+                id: 3,
+                name: "Sherlock Holmes",
+                age: 35,
+            },
+        ];
+
+    Now let's create a get trap to generate the dynamic function according to the function name.
+
+        const proxyPeople = new Proxy(people, {
+            get(target, property) {
+                if (property.startsWith('getBy')) {
+                    let prop = property.replace('getBy', '')
+                                    .toLowerCase();
+
+                    return function(value) {
+                        for (let i of target) {
+                            if (i[prop] === value) {
+                                return i;
+                            }
+                        }
+                    }
+                }
+
+                return target[property];
+            }
+        });
+
+    In this code we first check if the property name is starts with "getBy", 
+    then we remove the "getBy" from the property name, so we end up 
+    with the actual property name that we want to use to query the item. 
+    So, for example, if the property name is getById, we end up with id as the property to query by.
+
+    Now we have the property name that we want to query with, 
+    so we can return a function that accepts a value and iterate 
+    through the array to find an object with that value and on the given property.
+
+    You can try this by running the following:
+
+        console.log(proxyPeople.getById(1));
+        console.log(proxyPeople.getByName('Ann Clair'));
+        console.log(proxyPeople.getByAge(35));
+
+    The relevant person object for each call should be shown on the console:
+
+        { id: 1, name: 'John Doe', age: 21 }
+        { id: 2, name: 'Ann Clair', age: 24 }
+        { id: 3, name: 'Sherlock Holmes', age: 35 }
+
+    In the first line we used proxyPeople.getById(1), which then returned the user with an id of 1. 
+    In the second line we used proxyPeople.getByName('Ann Clair'), 
+    which returned the person with the name "Ann Clair", and so on.
+
+    As an exercise for the reader, try creating your own book array 
+    with properties isbn, title, and author. 
+    Then, using similar code as above, see how you can use getByIsbn, getByTitle, 
+    and getByAuthor to retrieve items from the list.
+
+    For simplicity, in this implementation we have assumed that there 
+    is only one object with a certain value for each property. 
+    But this might not be the case in some situations, 
+    which you can then edit that method to return an array of objects which match the given query.
+
+--------------------------------------------------------------------------------------------------------------
+
