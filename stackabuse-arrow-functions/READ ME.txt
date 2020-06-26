@@ -1,0 +1,101 @@
+reference : https://stackabuse.com/arrow-functions-in-javascript/
+
+------------------------------------------------------------------------------------------------------
+
+Arrow Function Syntax
+    // As we know, an ES5 function has the following syntax:
+
+    // snippet : func
+    function square(a) {
+    return a * a;
+    }
+
+    // In ES6, we can write the same function with only one line of code:
+
+    let square = (a) => {
+    return a * a;
+    };
+
+    // Furthermore, if the function body has only one statement that it returns,
+    // we can skip curly braces {} and the return statement:
+
+    let square = (a) => a * a;
+
+    // Also, if the function takes only one parameter we can even skip the braces () around it:
+
+    let square = (a) => a * a;
+
+    // On the other hand, if the function does not takes any parameters we may write it like this:
+
+    let results = () => {
+    /* ...some statements */
+    };
+
+    // We have to write less code with this syntax while providing the same functionality,
+    // which can help to declutter and simplify your code.
+
+    // The advantage of this syntax is most noticeable when used in callbacks.
+    // So a verbose and difficult-to-follow snippet of code like this:
+
+    function getRepos() {
+    return fetch("https://api.github.com/users/stackabuse/repos")
+        .then((response) => {
+        return response.json();
+        })
+        .then((response) => {
+        return response.data;
+        })
+        .then((repos) => {
+        return repos.filter((repo) => {
+            return repo.created_at > "2019-06-01";
+        });
+        })
+        .then((repos) => {
+        return repos.filter((repo) => {
+            return repo.stargazers_count > 1;
+        });
+        });
+    }
+
+    // can be reduced to the following, by using arrow functions:
+
+    function getRepos() {
+    return fetch("https://api.github.com/users/stackabuse/repos")
+        .then((response) => response.json())
+        .then((response) => response.data)
+        .then((repos) => repos.filter((repo) => repo.created_at > "2019-06-01"))
+        .then((repos) => repos.filter((repo) => repo.stargazers_count > 1));
+    }
+
+------------------------------------------------------------------------------------------------------
+
+Benefits of Arrow Functions
+
+    There are two major benefits of using Arrow functions. 
+    One is that it's a shorter syntax and thus requires less code. 
+    The main benefit is that it removes the several pain points associated with the this operator.
+
+    No Binding of 'this' Operator
+        Unlike other Object-oriented programming languages, in JavaScript (before arrow functions) 
+        every function defined its reference of this and it depends on how the function was called. 
+        If you have experience with modern programming languages like Java, Python, C#, etc., 
+        the operator this or self inside a method refers to the object that called the method 
+        and not how that method is called.
+
+    Programmers always complained that using this is too complicated in JavaScript. 
+    It causes great confusion in the JavaScript community and causes unintended 
+    behavior of the code in some cases.
+
+    To better understand the benefit of Arrow functions,
+    let us first understand how this works in ES5.
+
+    The 'this' Operator in ES5
+        The value of this is determined by a function's execution context, 
+        which in simple terms means how a function is called.
+
+    What adds more to the confusion is that every time the same function is called, 
+    the execution context can be different.
+
+    Let us try to understand it with the help of an example:
+
+------------------------------------------------------------------------------------------------------
