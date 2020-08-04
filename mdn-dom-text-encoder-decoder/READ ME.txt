@@ -1,0 +1,12 @@
+reference : 
+
+    Parent Node :   https://developer.mozilla.org/en-US/docs/Web/API/ParentNode
+
+        Properties & Methods
+
+    Child Node  :   https://developer.mozilla.org/en-US/docs/Web/API/ChildNode
+
+        Methods only, no Properties
+
+    Text Encoder :  https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder
+    

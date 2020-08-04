@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JS</title>
+  </head>
+  <body>
+    <!-- for parent.js -->
+    <ol id="foo">
+      <li>One</li>
+      <li>Two</li>
+      <li>Three</li>
+      <li>Four</li>
+    </ol>
+    <div class="one">
+      <div class="two">
+        <div class="three"></div>
+      </div>
+    </div>
+
+    <!-- for child.js -->
+
+    <div id="one">Div with id="one"</div>
+    <div id="two">Div with id="two"</div>
+    <div id="three">Div with id="three"</div>
+    <button id="but" onclick="remove()">Delete Div two</button>
+
+    <!-- for geolocation -->
+    <!-- <button id="find-me">Show my location</button><br />
+    <p id="status"></p>
+    <a id="map-link" target="_blank"></a> -->
+
+    <!-- invoke .js file -->
+    <script src="parent.js"></script>
+    <script src="child.js"></script>
+    <script src="textEncoderDecoder.js"></script>
+    <script src="url.js"></script>
+  </body>
+</html>
