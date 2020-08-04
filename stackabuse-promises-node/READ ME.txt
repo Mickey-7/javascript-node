@@ -1,0 +1,200 @@
+reference : https://stackabuse.com/promises-in-node-js/
+
+----------------------------------------------------------------------------------------------------------
+
+Introduction
+    JavaScript is single-threaded, which means that everything, including events, runs on the same thread. 
+    If the thread is not free, code execution is delayed until it is. 
+    
+    This can be a bottleneck for our application since it can really cause serious performance problems.
+
+    There are different ways by which we can overcome this limitation. 
+    In this article, we'll explore the modern way to handle asynchronous tasks in JavaScript - Promises.
+
+----------------------------------------------------------------------------------------------------------
+
+Callbacks and Callback Hell
+    If you are a JavaScript developer, you've likely heard of, if not used, callbacks:
+        
+        function hello() {
+            console.log('Hello World!');
+        }
+
+        setTimeout(hello, 5000);
+
+    This code executes a function, setTimeout(), that waits for the defined time (in milliseconds), 
+    passed to it as the second argument, 5000. After the time passes, only then does it execute the 
+    function hello, passed to it as the first parameter.
+
+    The function is an example of a higher-order function and the function passed to it is called a callback 
+    - a function that is to be executed after another function has finished executing.
+
+    Let's say that we sent a request to an API to return the most-liked photos from our account. 
+    We may likely have to wait for the response as the API/service may be doing some calculations before returning the response.
+
+    This can potentially take a long time, and we do not want to freeze the thread while we wait for the response. 
+    Instead, we'll create a callback that will be notified when the response comes in.
+
+    Until that time, the rest of the code is being executed, like presenting posts and notifications.
+
+    If you've ever worked with callbacks, there's a chance you've experienced callback hell:
+
+        doSomething(function(x) {
+            console.log(x);
+            doSomethingMore(x, function(y) {
+                console.log(y);
+                doRestOfTheThings(y, function(z) {
+                    console.log(z);
+                });
+            });
+        });
+
+    Imagine a case where we request the server to get multiple resources - a person, their 
+    friends and their friend's posts, the comments for each friends' posts, the replies, etc.
+
+    Managing these nested dependencies can quickly get out of hand.
+
+    We can avoid callback hells and handle asynchronous calls by using Promises.
+
+----------------------------------------------------------------------------------------------------------
+
+Creating a Promise
+    Promises, as the name implies, is the function "giving its word" 
+    that a value will be returned at a later time. 
+    
+    It's a proxy for a value that might not be returned, 
+    if the function we expect a response from doesn't deliver.
+
+    Instead of returning concrete values, these asynchronous functions return a Promise object, 
+    which will at some point either be fulfilled or not.
+
+    Most often, when coding, we'll be consuming Promises rather than creating them. 
+    It is the libraries/frameworks that create Promises for the clients to consume.
+    
+    Still, it is good to understand what goes behind creating a Promise:
+
+        let promise = new Promise(function(resolve, reject) {
+            // Some imaginary 2000 ms timeout simulating a db call
+            setTimeout(()=> {
+                if (/* if promise can be fulfilled */) {
+                    resolve({msg: 'It works', data: 'some data'});
+                } else {
+                    // If promise can not be fulfilled due to some errors like network failure
+                    reject(new Error({msg: 'It does not work'}));
+                }
+            }, 2000);
+        });
+
+    The promise constructor receives an argument - a callback. 
+    The callback can be a regular function or an arrow function. 
+    The callback takes two parameters - resolve and reject. 
+    Both are function references. The callback is also called the executor.
+
+    The executor runs immediately when a promise is created. 
+    The promise is resolved by calling resolve() if the promise is fulfilled,
+    and rejected by calling reject() if it can't be fulfilled.
+
+    Both resolve() and reject() takes one argument 
+    - boolean, string, number, array, or an object.
+----------------------------------------------------------------------------------------------------------
+
+Consuming a Promise
+    Through an API, say we requested some data from the server and it's uncertain when it'll be returned 
+    - if it'll be returned at all. This is a perfect example of when we'd use a Promise to help us out.
+
+    Assuming that the server's method that handles our call returns a Promise, we can consume it:
+
+        promise.then((result) => {
+            console.log("Success", result);
+        }).catch((error) => {
+            console.log("Error", error);
+        })
+
+    As we can see we have chained two methods - then() and catch(). 
+    These are few of the various methods provided by the Promise object.
+
+    then() is executed when things go well, i.e the promise is fulfilled by the resolve() method. 
+    And if the promise was rejected, the catch() method will be called with the error sent to reject.
+
+----------------------------------------------------------------------------------------------------------
+
+Chaining Promises
+    If we have a sequence of asynchronous tasks one after another that need to be performed 
+    - the more nesting there is, the more confusing the code becomes.
+    
+    This leads us to callback hell, which can easily be avoided by 
+    chaining several then() methods on a single Promised result:
+
+        //   chaining promises
+        let promise1 = new Promise(function (resolve, reject) {
+        setTimeout(() => {
+            resolve({ msg: "To do some more job" });
+        }, 1000);
+        })
+        .then((result) => {
+            console.log({ data: "some data", result });
+        })
+        .then(() => {
+            console.log({ data: "some more data" });
+        })
+        .then(() => {
+            console.log({ data: "some other data" });
+        });
+
+        As we can see the result is passed through the chain of then() handlers:
+
+        •	The initial promise object resolves
+        •	Then the then() handler is called to register user
+        •	The value that it returns is passed to the next then() handler to auto login the user
+        •	...and so on
+
+        Also, the then(handler) may create and return a promise.
+
+    Note: Although technically we can do something like the proceeding example, 
+    it can take away from the point of chaining. 
+    
+    Although this technique can be good for when you need to optionally call asynchronous methods:
+        
+        let promise = new Promise(function(resolve, reject) {
+            setTimeout(() => resolve({msg: 'To do some more job'}), 1000);
+        });
+
+        promise.then(function(result) {
+            return {data: 'some data'};
+        });
+
+        promise.then(function(result) {
+            return {data: 'some other data'};
+        });
+
+        promise.then(function(result) {
+            return {data: 'some more data'};
+        });
+
+    What we are doing here is just adding several handlers to one promise, 
+    all of which process the result indepdendently. 
+
+    They are not passing the result to each other in the sequence.
+
+    This way, all handlers get the same result – 
+    the result of that promise - {msg: 'To do some more job'}.
+
+----------------------------------------------------------------------------------------------------------
+
+Conclusion
+    Promises, as the name implies, is the function "giving its word" 
+    that a value will be returned at a later point in time. 
+    
+    It's a proxy for a value that might not be returned, 
+    if the function we expect a response from doesn't deliver.
+
+    Instead of returning concrete values, these asynchronous functions return a Promise object, 
+    which will at some point either be fulfilled or not.
+
+    If you have worked with callbacks, you must appreciate the clean and clear semantics of Promises.
+
+    As a Node/JavaScript developer, we'll be dealing with promises more often. 
+    After all, it is an asynchronous world, full of surprises.
+
+
+----------------------------------------------------------------------------------------------------------
